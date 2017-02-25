@@ -1,6 +1,37 @@
 import socket
 import sys
 import threading
+import math
+import random
+
+class cryptoSystem(object):
+	def __init__(self,n):
+		self.maxv = n
+		self.primeSeive = self.seive()
+		self.findBlum()
+	def seive(self):
+		primeSeive = range(0,self.maxv)
+		for i in range(0,self.maxv):
+			primeSeive[i] = 0
+		for i in range(2,self.maxv):
+			j = 2*i
+			while(j < self.maxv and primeSeive[j] == 0):
+				primeSeive[j] = 1
+				j += i
+		return primeSeive
+	def findBlum(self):
+		blum = []
+		count = 0
+		i = self.maxv 
+		while ( i > 0 and count < 2):
+			i -= 1
+			if self.primeSeive[i] == 0:
+				count += 1
+				blum.append(i)
+		self.p = blum[0]*2+1
+		self.q = blum[1]*2+1
+		self.n = self.p*self.q
+
 
 class incoming (threading.Thread):
 	def __init___(self):
@@ -28,6 +59,7 @@ def connect(socket,addr):
 		print msg
 		print "Trying to Reconnect to Server " + str(addr[0]) + ":" + str(addr[1])
 		return connect(socket,addr)
+
 
 try:
 	s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)

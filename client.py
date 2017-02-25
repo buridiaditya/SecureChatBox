@@ -8,7 +8,8 @@ class cryptoSystem(object):
 	def __init__(self,n):
 		self.maxv = n
 		self.primeSeive = self.seive()
-		self.findBlum()
+		self.generateKeys()
+
 	def seive(self):
 		primeSeive = range(0,self.maxv)
 		for i in range(0,self.maxv):
@@ -19,7 +20,8 @@ class cryptoSystem(object):
 				primeSeive[j] = 1
 				j += i
 		return primeSeive
-	def findBlum(self):
+
+	def generateKeys(self):
 		blum = []
 		count = 0
 		i = self.maxv 
@@ -31,6 +33,29 @@ class cryptoSystem(object):
 		self.p = blum[0]*2+1
 		self.q = blum[1]*2+1
 		self.n = self.p*self.q
+		publicKey = int(random.random()*math.sqrt(self.maxv))
+		v = math.sqrt(publicKey)
+		while(v*v != publicKey):
+			publicKey = int(random.random()*math.sqrt(self.maxv))
+			v = math.sqrt(publicKey)
+		self.publicKey = publicKey
+
+	def encrypt(self,message,publicKey,N):
+		asciiM = bytearray(message)
+		binaryOfChars = []
+		encyptedMessage = []
+		for i in asciiM:
+			binaryOfChars.append(bin(i).split('b')[1])
+		for i in binaryOfChars:
+			x = random.random()*math.sqrt(N)*10
+			temp = []
+			for j in i:
+				if j == '1':
+					temp.append((x*x*publicKey)%N)
+				else : 
+					temp.append((x*x*publicKey)%N)
+			encyptedMessage.append(temp)
+		return encyptedMessage
 
 
 class incoming (threading.Thread):

@@ -11,28 +11,27 @@ class client (threading.Thread):
 		self.name = name
 	def run(self):
 		while 1:
-			command = self.soc.recv(1024)	
-			data = command.split(":",1)
-			if len(data) != 1:
-				message = data[1].strip()
-				user = data[0].lower().strip()
-				if user == 'server':
-					if message == "logout":
-						self.soc.send("Succesfully Logout Sire!")
-						return
-					elif message == "show friends":
-						for i in clients:
-							if i[0] != self.name:
-								self.soc.send(i[0])
-				else:
+			user = self.soc.recv(4096)
+			if user != "server":
+				for i in clients:
+					if i[0].lower() == user:
+						self.soc.send("keys:"+str(i[2])+":"+str(i[3]))
+			message = self.soc.recv(4096)	
+			if user == "server":
+				if message == "logout":
+					self.soc.send("Succesfully Logout Sire!")
+					return
+				elif message == "show friends":
 					for i in clients:
-						if i[0].lower() == user:
-							i[1].send(self.name + ">: " + message)
-			else : 
-				self.soc.send("Invalid Command")
-
+						if i[0] != self.name:
+							self.soc.send(i[0])
+			else:
+				for i in clients:
+					if i[0].lower() == user:
+						i[1].send(self.name + ":" + message)
+	
 clients = []
-HOST = '0.0.0.0'
+HOST = '127.0.0.1'
 PORT = 8888
 addr = (HOST,PORT)
 s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -44,10 +43,11 @@ try:
 	while 1:
 		conn,addr = s.accept()
 		print "Connected to " + str(addr[0]) + " : " + str(addr[1])
-		name = conn.recv(1024)
+		inc = conn.recv(1024)
+		data = inc.split(":")
 		conn.send("Welcome to NoseBook!")
-		clie = client(conn,addr,name)
-		clients.append([name,conn])
+		clie = client(conn,addr,data[0])
+		clients.append([data[0],conn,int(data[1]),int(data[2])])
 		clie.start()
 except KeyboardInterrupt:
 	s.close()
